@@ -1,0 +1,29 @@
+{
+  "name": "ucwinros",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "node": "8.11.4"
+  },
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Forum8World16/ucwinros.git"
+  },
+  "author": "Matthew Swarts",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Forum8World16/ucwinros/issues"
+  },
+  "homepage": "https://github.com/Forum8World16/ucwinros#readme",
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "express": "^4.17.s1",
+    "jquery": "^3.4.1",
+    "socket.io": "^2.2.0"
+  }
+}
