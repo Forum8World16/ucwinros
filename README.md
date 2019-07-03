@@ -52,7 +52,7 @@
 |2  |Message Type   |   	    |short  |unsigned   |2   	| enum  	|
 |3  |Lidar Sensor Id            |   	    |Byte   |unsigned |1   	|id for each lidar sensor   	|
 |4  |Timestamp                  |seconds    |Double |signed   |8   	|scanned time from plug-in communication start   	|
-|5  |Scan Number: Horizontal    |           |Long   |unsigned |4   	|number for each scan data, [1..*]   	|
+|5  |Scan Number                |           |Long   |unsigned |4   	|number for each scan data, [1..*]   	|
 |6  |Scan Number: Vertical      |           |Long   |unsigned |4   	|number per scan, [1..*]   	|
 |7  |Vertical Angle             |radians    |Single |signed   |4   	|   	|
 |8  |Start Horizontal Angle     |radians    |Single |signed   |4   	|horizontal angle of first point   	|

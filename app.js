@@ -193,9 +193,9 @@ var processMessage = function(messageBuffer){
             */
 
             
-            sample['id'] = messageBuffer.readUInt8(6); //1 byte
+            sample['devId'] = messageBuffer.readUInt8(6); //1 byte
             sample['time'] = messageBuffer.readDoubleLE(7); // 8 bytes
-            sample['hId'] = messageBuffer.readUInt32LE(15); //4 bytes
+            sample['scanId'] = messageBuffer.readUInt32LE(15); //4 bytes
             sample['vId'] = messageBuffer.readUInt32LE(19); //4 bytes
             sample['vRad'] = messageBuffer.readFloatLE(23); //4 bytes
             sample['hRadStart'] = messageBuffer.readFloatLE(27); //4 bytes
@@ -205,9 +205,8 @@ var processMessage = function(messageBuffer){
             for(i=0;i<sample['count'];i++){
                 sample['dists'].push(messageBuffer.readFloatLE(39+4*i)); //4 bytes)
             }
-            if(Math.random>0.8){
-                io.emit('lidar2',sample);
-            }
+            
+            io.emit('lidar2',sample);
             
 
             //Lidar Message Schema

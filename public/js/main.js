@@ -224,36 +224,46 @@ function render() {
 
 
 
-
-let _lidarRayCount = 64;
+//vertical 0-14 degrees with 8 segments is 2 degrees
+//horizontal is -45 to +45 with 128 segments is 0.01236847501413304424591591883181 radians
+let _lidarRayCount = 128;
+let _lidarLayerCount = 8;
 let _lidarDistances = [];
 let _lidarDevice = new THREE.Group();
 
 function createLidarDevice() {
     _lidarDevice.position.y = 2;
     let material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-    for(i=0;i<_lidarRayCount;i++){
-        let geometry = new THREE.Geometry();
-        let angle = i*2*Math.PI/_lidarRayCount;
-        geometry.vertices.push(new THREE.Vector3( Math.cos(angle)*0.1, 0, Math.sin(angle)*0.1) );
-        geometry.vertices.push(new THREE.Vector3( Math.cos(angle)*_lidarDistances[i], 0, Math.sin(angle)*_lidarDistances[i]) );
-        var line = new THREE.Line( geometry, material );
-        _lidarDevice.add(line);
+    for(v=0;v<_lidarLayerCount;v++){
+        let lidarLayer = new THREE.Group();
+        //_lidarDistances.push([]);
+        let vAngle = v*(14/360)*2*Math.PI/_lidarLayerCount;
+        let vCosine = Math.cos(vAngle);
+        for(i=0;i<_lidarRayCount;i++){
+            let geometry = new THREE.Geometry();
+            let hAngle = i*0.5*Math.PI/(_lidarRayCount-1)-0.25*Math.PI;
+            geometry.vertices.push(new THREE.Vector3( 0.5*Math.cos(hAngle)*vCosine, 0.5*Math.sin(vAngle), 0.5*Math.sin(hAngle)*vCosine) );
+            geometry.vertices.push(new THREE.Vector3( 5.0*Math.cos(hAngle)*vCosine, 5.0*Math.sin(vAngle), 5.0*Math.sin(hAngle)*vCosine) );
+            lidarLayer.add(new THREE.Line( geometry, material ));
+        }
+        _lidarDevice.add(lidarLayer);
     }
     scene.add( _lidarDevice );
 }
 createLidarDevice();
 
-function updateLidarDevice(dataPoints){
-    
-    let _lidarRays = _lidarDevice.children;
+function updateLidarDevice(vId,dists){
+    let _lidarRays = _lidarDevice.children[vId-1];
     console.dir(_lidarRays);
-
+    
+    let vAngle = (vId-1)*(14/360)*2*Math.PI/_lidarLayerCount;
+    let vCosine = Math.cos(vAngle);
     for(i=0;i<_lidarRayCount;i++){
-        _lidarDistances[i] = dataPoints[i]; //assumes same length
-        let angle = i*2*Math.PI/_lidarRayCount;
-        _lidarRays[i].geometry.vertices[1].x = Math.cos(angle)*_lidarDistances[i];
-        _lidarRays[i].geometry.vertices[1].z = Math.sin(angle)*_lidarDistances[i];
+        let geometry = new THREE.Geometry();
+        let hAngle = i*0.5*Math.PI/(_lidarRayCount-1)-0.25*Math.PI;
+        _lidarRays[i].geometry.vertices[1].x = dists[i]*Math.cos(hAngle)*vCosine;
+        _lidarRays[i].geometry.vertices[1].y = dists[i]*Math.cos(vAngle)*vCosine;
+        _lidarRays[i].geometry.vertices[1].z = dists[i]*Math.sin(hAngle)*vCosine;
         _lidarRays[i].geometry.vertices.needsUpdate = true;
         _lidarRays[i].geometry.verticesNeedUpdate = true;
     }
@@ -265,15 +275,15 @@ socket.on('connect',function(){
     socket.emit('subscribe',"webclients");
 });
 
-socket.on('lidar',function(data){
-    console.log(data);
-    updateLidarDevice(data);
-});
-
-
 socket.on('lidar2',function(data){
     console.dir(data);
+    updateLidarDevice(data['vId'],data['dists']);
 });
+
+
+// socket.on('lidar',function(data){
+//     console.dir(data);
+// });
 
 
 socket.on('addModel',function(data){
