@@ -1,7 +1,7 @@
 # ucwinros
 
 
-# [Delimiting TCP](https://cs.nyu.edu/artg/internet/Spring2006/readings/How%20to%20read%20TCP%20data.pdf)
+# [Delimiting TCP Strategies](https://cs.nyu.edu/artg/internet/Spring2006/readings/How%20to%20read%20TCP%20data.pdf)
 - Boundary Sequence
 - Byte Count
 - End-of-file
@@ -9,7 +9,7 @@
 # Message Header
 |No |Content        |Unit       |Type   |Sign       |Bytes  |Notes  |
 |--:|--:	        |--:	    |--:	|--:	    |---	|:-:	|
-|1  |Message Length |           |Long   |unsigned   |4   	| includes everything but start symbol  	|
+|1  |Message Length |           |Long   |unsigned   |4   	| includes everything but the header and footer 	|
 
 # Message Footer
 |No |Content        |Unit       |Type   |Sign       |Bytes  |Notes  |
@@ -26,7 +26,6 @@
 |5  |Brake          |0.0 to 1.0 |single |signed     |4   	|   	|
 |6  |Steering       |-1.0 to 1.0|single |signed     |4   	|   	|
 |7  |Footer         |   	    |footer |           |4   	|   	|
-
 
 # Camera Message Schema
 |No |Content                |Unit       |Type   |Sign     |Bytes|Notes  |
