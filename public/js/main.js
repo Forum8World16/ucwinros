@@ -271,7 +271,9 @@ socket.on('lidar',function(data){
 });
 
 
-
+socket.on('lidar2',function(data){
+    console.dir(data);
+});
 
 
 socket.on('addModel',function(data){
