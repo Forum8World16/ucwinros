@@ -22,7 +22,7 @@ const Struct = require('struct');
 
 var lidarSample = Struct()
 	.word8('id')
-    .double('timestamp') //64-bit
+    .doublele('timestamp') //64-bit
     .word16Ule('scan_num_horizontal')
     .word16Ule('scan_num_vertical')
     .float('vertical_angle',1)
@@ -33,16 +33,90 @@ var lidarSample = Struct()
 
 //var tcpRequest = Struct();
 
+const TCP_ADDR = '127.0.0.1';
+const TCP_PORT = 1337;
+const TCP_MSG_DELIMITER = 0xF8F8F8F8; //'øøøø'  248,248,248,248
+const TCP_MSG_HEADER_LEN = 4; // 32 bit integer --> 4
+var accumulatingBuffer = new Buffer(0); 
+var totalPacketLen   = -1; 
+var accumulatingLen  =  0;
+var recvedThisTimeLen=  0;
+
 var tcpclient = new net.Socket();
-tcpclient.connect(1337, '127.0.0.1', function() {
+tcpclient.connect(TCP_PORT, TCP_ADDR, function() {
 	console.log('connected to tcp server');
 	//tcpclient.write('Hello, server! Love, Client.');
 });
 
 tcpclient.on('data', function(data) {
     console.log('Received: ' + data);
-    lidarSample._setBuff(data);
-	tcpclient.destroy(); // kill client after server's response
+    //lidarSample._setBuff(data);
+    
+    //accumulate incoming data
+    recvedThisTimeLen = data.length;
+    let tmpBuffer = new Buffer( accumulatingLen + recvedThisTimeLen );
+    accumulatingBuffer.copy(tmpBuffer);
+    data.copy ( tmpBuffer, accumulatingLen  ); // offset for accumulating
+    accumulatingBuffer = tmpBuffer; 
+    tmpBuffer = null;
+    accumulatingLen += recvedThisTimeLen;
+
+    if( recvedThisTimeLen < packetHeaderLen ) {
+        console.log('need to get more data(less than header-length received) -> wait..');
+        return;
+    } else if( recvedThisTimeLen == packetHeaderLen ) {
+        console.log('need to get more data(only header-info is available) -> wait..');
+        return;
+    } else {
+        console.log('before-totalPacketLen=' + totalPacketLen ); 
+        //a packet info is available..
+        if( totalPacketLen < 0 ) {
+            totalPacketLen = accumulatingBuffer.readUInt32BE(0) ; 
+            console.log('totalPacketLen=' + totalPacketLen );
+        }
+    }
+
+
+
+
+    //while=> 
+    //in case of the accumulatingBuffer has multiple 'header and message'.
+    while( accumulatingLen >= totalPacketLen + packetHeaderLen ) {
+        console.log( 'accumulatingBuffer= ' + accumulatingBuffer );
+
+        var aPacketBufExceptHeader = new Buffer( totalPacketLen  ); // a whole packet is available...
+        console.log( 'aPacketBufExceptHeader len= ' + aPacketBufExceptHeader.length );
+        accumulatingBuffer.copy( aPacketBufExceptHeader, 0, packetHeaderLen, accumulatingBuffer.length); // 
+
+        ////////////////////////////////////////////////////////////////////
+        //process one packet data
+        var stringData = aPacketBufExceptHeader.toString();
+        var usage = stringData.substring(0,stringData.indexOf(TCP_DELIMITER));
+        console.log("usage: " + usage);
+        //call handler
+        (serverFunctions [usage])(c, remoteIpPort, stringData.substring(1+stringData.indexOf(TCP_DELIMITER)));
+        ////////////////////////////////////////////////////////////////////
+
+        //rebuild buffer
+        var newBufRebuild = new Buffer( accumulatingBuffer.length );
+        newBufRebuild.fill();
+        accumulatingBuffer.copy( newBufRebuild, 0, totalPacketLen + packetHeaderLen, accumulatingBuffer.length  );
+
+        //init
+        accumulatingLen -= (totalPacketLen +4) ;
+        accumulatingBuffer = newBufRebuild;
+        newBufRebuild = null;
+        totalPacketLen = -1;
+        console.log( 'Init: accumulatingBuffer= ' + accumulatingBuffer );   
+        console.log( '      accumulatingLen   = ' + accumulatingLen );  
+
+        if( accumulatingLen <= packetHeaderLen ) {
+            return;
+        } else {
+            totalPacketLen = accumulatingBuffer.readUInt32BE(0) ; 
+            console.log('totalPacketLen=' + totalPacketLen );
+        }    
+    }  
 });
 
 tcpclient.on('close', function() {

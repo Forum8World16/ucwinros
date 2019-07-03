@@ -4,7 +4,8 @@
 # [Delimiting TCP Strategies](https://cs.nyu.edu/artg/internet/Spring2006/readings/How%20to%20read%20TCP%20data.pdf)
 - Boundary Sequence
 - Byte Count
-- End-of-file
+- End-of-file\
+[example using buffer of tcp data event](https://github.com/jeremyko/nodeChatServer)
 
 # Message Header
 |No |Content        |Unit       |Type   |Sign       |Bytes  |Notes  |

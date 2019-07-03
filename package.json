@@ -22,7 +22,7 @@
   "homepage": "https://github.com/Forum8World16/ucwinros#readme",
   "dependencies": {
     "bootstrap": "^4.3.1",
-    "express": "^4.17.s1",
+    "express": "^4.17.1",
     "jquery": "^3.4.1",
     "socket.io": "^2.2.0",
     "struct": "0.0.12"
