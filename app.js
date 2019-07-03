@@ -37,8 +37,9 @@ const TCP_ADDR = '127.0.0.1';
 const TCP_PORT = 1337;
 const TCP_MSG_DELIMITER = 0xF8F8F8F8; //'øøøø'  248,248,248,248
 const TCP_MSG_HEADER_LEN = 4; // 32 bit integer --> 4
+const TCP_MSG_FOOTER_LEN = 4; // 32 bit integer --> 4
 var accumulatingBuffer = new Buffer(0); 
-var totalPacketLen   = -1; 
+var messageLength   = -1; 
 var accumulatingLen  =  0;
 var recvedThisTimeLen=  0;
 
@@ -68,11 +69,11 @@ tcpclient.on('data', function(data) {
         console.log('need to get more data(only header-info is available) -> wait..');
         return;
     } else {
-        console.log('before-totalPacketLen=' + totalPacketLen ); 
+        console.log('before-messageLength=' + messageLength ); 
         //a packet info is available..
-        if( totalPacketLen < 0 ) {
-            totalPacketLen = accumulatingBuffer.readUInt32BE(0) ; 
-            console.log('totalPacketLen=' + totalPacketLen );
+        if( messageLength < 0 ) {
+            messageLength = accumulatingBuffer.readUInt32BE(0); 
+            console.log('messageLength=' + messageLength );
         }
     }
 
@@ -81,40 +82,47 @@ tcpclient.on('data', function(data) {
 
     //while=> 
     //in case of the accumulatingBuffer has multiple 'header and message'.
-    while( accumulatingLen >= totalPacketLen + packetHeaderLen ) {
+    while( accumulatingLen >= messageLength + packetHeaderLen ) {
         console.log( 'accumulatingBuffer= ' + accumulatingBuffer );
 
-        var aPacketBufExceptHeader = new Buffer( totalPacketLen  ); // a whole packet is available...
-        console.log( 'aPacketBufExceptHeader len= ' + aPacketBufExceptHeader.length );
-        accumulatingBuffer.copy( aPacketBufExceptHeader, 0, packetHeaderLen, accumulatingBuffer.length); // 
+        let messageBuffer = new Buffer( messageLength  ); // a whole packet should be available...
+        console.log( 'messageBuffer len= ' + messageBuffer.length );
+        accumulatingBuffer.copy( messageBuffer, 0, packetHeaderLen, accumulatingBuffer.length); // 
 
         ////////////////////////////////////////////////////////////////////
-        //process one packet data
-        var stringData = aPacketBufExceptHeader.toString();
-        var usage = stringData.substring(0,stringData.indexOf(TCP_DELIMITER));
-        console.log("usage: " + usage);
+
+        processMessage(messageBuffer);
+        
+        //let stringData = aPacketBufExceptHeader.toString();
+        //let usage = stringData.substring(0,stringData.indexOf(TCP_MSG_DELIMITER));
+        //console.log("usage: " + usage);
+
+        //process the first two bytes for the message type
+        let messageType = messageBuffer.readInt16LE(0);
+        console.log("message type: " + messageType.toString(16)); //convert the integer to hexidecimal
+        
         //call handler
-        (serverFunctions [usage])(c, remoteIpPort, stringData.substring(1+stringData.indexOf(TCP_DELIMITER)));
+        (serverFunctions [usage])(c, remoteIpPort, stringData.substring(1+stringData.indexOf(TCP_MSG_DELIMITER)));
         ////////////////////////////////////////////////////////////////////
 
         //rebuild buffer
-        var newBufRebuild = new Buffer( accumulatingBuffer.length );
+        let newBufRebuild = new Buffer( accumulatingBuffer.length );
         newBufRebuild.fill();
-        accumulatingBuffer.copy( newBufRebuild, 0, totalPacketLen + packetHeaderLen, accumulatingBuffer.length  );
+        accumulatingBuffer.copy( newBufRebuild, 0, messageLength + packetHeaderLen, accumulatingBuffer.length);
 
         //init
-        accumulatingLen -= (totalPacketLen +4) ;
+        accumulatingLen -= (messageLength + 4) ; //TODO may need to include footer length here too
         accumulatingBuffer = newBufRebuild;
         newBufRebuild = null;
-        totalPacketLen = -1;
+        messageLength = -1;
         console.log( 'Init: accumulatingBuffer= ' + accumulatingBuffer );   
         console.log( '      accumulatingLen   = ' + accumulatingLen );  
 
         if( accumulatingLen <= packetHeaderLen ) {
             return;
         } else {
-            totalPacketLen = accumulatingBuffer.readUInt32BE(0) ; 
-            console.log('totalPacketLen=' + totalPacketLen );
+            messageLength = accumulatingBuffer.readUInt32BE(0) ; 
+            console.log('messageLength=' + messageLength );
         }    
     }  
 });
@@ -122,3 +130,18 @@ tcpclient.on('data', function(data) {
 tcpclient.on('close', function() {
 	console.log('tcp connection closed');
 });
+
+
+var processMessage = function(messageBuffer){
+
+    //process the first two bytes for the message type
+    let messageType = messageBuffer.readInt16LE(0);
+    console.log("message type: " + messageType.toString(16)); //convert the integer to hexidecimal
+    
+    switch(messageType){
+        case 0x0000:
+            break;
+        case 0x0001:
+            break;
+    }
+}
