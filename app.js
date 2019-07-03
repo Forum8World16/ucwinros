@@ -25,9 +25,9 @@ var lidarSample = Struct()
     .doublele('timestamp') //64-bit
     .word16Ule('scan_num_horizontal')
     .word16Ule('scan_num_vertical')
-    .float('vertical_angle',1)
-    .float('start_horizontal_angle',1)
-    .float('horizontal_resolution',1)
+    .floatle('vertical_angle',1)
+    .floatle('start_horizontal_angle',1)
+    .floatle('horizontal_resolution',1)
     .word16Ule('point_count',1)
     .array('distances',128,'word8');
 
