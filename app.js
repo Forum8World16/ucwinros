@@ -35,13 +35,13 @@ var lidarSample = Struct()
 
 const TCP_ADDR = '127.0.0.1';
 const TCP_PORT = 1337;
-const TCP_MSG_DELIMITER = 0xF8F8F8F8; //'øøøø'  248,248,248,248
+const TCP_MSG_DELIMITER = 0xF8F8F8F8; //'øøøø'  248,248,248,248  4177066232
 const TCP_MSG_HEADER_LEN = 4; // 32 bit integer --> 4
 const TCP_MSG_FOOTER_LEN = 4; // 32 bit integer --> 4
 var accumulatingBuffer = new Buffer(0); 
-var messageLength   = -1; 
-var accumulatingLen  =  0;
-var recvedThisTimeLen=  0;
+var messageLength = -1; 
+var accumulatingLenth = 0;
+var receivedDataLength = 0;
 
 var tcpclient = new net.Socket();
 tcpclient.connect(TCP_PORT, TCP_ADDR, function() {
@@ -54,18 +54,18 @@ tcpclient.on('data', function(data) {
     //lidarSample._setBuff(data);
     
     //accumulate incoming data
-    recvedThisTimeLen = data.length;
-    let tmpBuffer = new Buffer( accumulatingLen + recvedThisTimeLen );
+    receivedDataLength = data.length;
+    let tmpBuffer = new Buffer( accumulatingLenth + receivedDataLength );
     accumulatingBuffer.copy(tmpBuffer);
-    data.copy ( tmpBuffer, accumulatingLen  ); // offset for accumulating
+    data.copy ( tmpBuffer, accumulatingLenth  ); // offset for accumulating
     accumulatingBuffer = tmpBuffer; 
     tmpBuffer = null;
-    accumulatingLen += recvedThisTimeLen;
+    accumulatingLenth += receivedDataLength;
 
-    if( recvedThisTimeLen < packetHeaderLen ) {
+    if( receivedDataLength < packetHeaderLen ) {
         console.log('need to get more data(less than header-length received) -> wait..');
         return;
-    } else if( recvedThisTimeLen == packetHeaderLen ) {
+    } else if( receivedDataLength == packetHeaderLen ) {
         console.log('need to get more data(only header-info is available) -> wait..');
         return;
     } else {
@@ -82,7 +82,7 @@ tcpclient.on('data', function(data) {
 
     //while=> 
     //in case of the accumulatingBuffer has multiple 'header and message'.
-    while( accumulatingLen >= messageLength + packetHeaderLen ) {
+    while( accumulatingLenth >= messageLength + packetHeaderLen ) {
         console.log( 'accumulatingBuffer= ' + accumulatingBuffer );
 
         let messageBuffer = new Buffer( messageLength  ); // a whole packet should be available...
@@ -111,14 +111,14 @@ tcpclient.on('data', function(data) {
         accumulatingBuffer.copy( newBufRebuild, 0, messageLength + packetHeaderLen, accumulatingBuffer.length);
 
         //init
-        accumulatingLen -= (messageLength + 4) ; //TODO may need to include footer length here too
+        accumulatingLenth -= (messageLength + 4) ; //TODO may need to include footer length here too
         accumulatingBuffer = newBufRebuild;
         newBufRebuild = null;
         messageLength = -1;
         console.log( 'Init: accumulatingBuffer= ' + accumulatingBuffer );   
-        console.log( '      accumulatingLen   = ' + accumulatingLen );  
+        console.log( '      accumulatingLenth   = ' + accumulatingLenth );  
 
-        if( accumulatingLen <= packetHeaderLen ) {
+        if( accumulatingLenth <= packetHeaderLen ) {
             return;
         } else {
             messageLength = accumulatingBuffer.readUInt32BE(0) ; 
@@ -137,7 +137,7 @@ var processMessage = function(messageBuffer){
     //process the first two bytes for the message type
     let messageType = messageBuffer.readInt16LE(0);
     console.log("message type: " + messageType.toString(16)); //convert the integer to hexidecimal
-    
+
     switch(messageType){
         case 0x0000:
             break;

@@ -17,7 +17,7 @@
 |--:|--:	        |--:	    |--:	|--:	    |---	|:-:	|
 |1  |End Delimiter  |   	    |Long   |unsigned   |4   	| 0xF8 0xF8 0xF8 0xF8|
 
-# Vehicle Control Message Schema
+# Vehicle Control Message Schema 0x0101
 |No |Content        |Unit       |Type   |Sign       |Bytes  |Notes  |
 |--:|--:	        |--:	    |--:	|--:	    |---	|:-:	|
 |1  |Header         |   	    |header |           |4   	|   	|
@@ -28,7 +28,7 @@
 |6  |Steering       |-1.0 to 1.0|single |signed     |4   	|   	|
 |7  |Footer         |   	    |footer |           |4   	|   	|
 
-# Camera Message Schema
+# Camera Message Schema   0x0201
 |No |Content                |Unit       |Type   |Sign     |Bytes|Notes  |
 |--:|--:	                |--:	    |--:	|--:	  |---	|:-:	|
 |1  |Header         |   	    |header |           |4   	|   	|
@@ -45,7 +45,7 @@
 |9c | Pixel color: Red      |0-255      |Byte   |unsigned |1   	|if it exceeds 8500 pixels data division occurs   	|
 |10 |Footer         |   	    |footer |           |4   	|   	|
 
-# Lidar Message Schema
+# Lidar Message Schema    0x0301
 |No |Content                    |Unit       |Type   |Sign     |Bytes|Notes  |
 |--:|--:	                    |--:	    |--:	|--:	  |---	|:-:	|
 |1  |Header         |   	    |header |           |4   	|   	|
