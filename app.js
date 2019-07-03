@@ -12,6 +12,8 @@ app.use(express.static(__dirname + '/public'));
 
 app.use('/js', express.static(__dirname + '/node_modules/jquery/dist')); // redirect JS jQuery
 app.use('/', express.static(__dirname + '/node_modules/bootstrap/dist')); // redirect bootstrap JS, CSS, and fonts
+app.use('/js', express.static(__dirname + '/node_modules/three/build')); // redirect three JS
+app.use('/js', express.static(__dirname + '/node_modules/three/examples/js')); // redirect three JS
 
 var port = process.env.PORT || 80;
 server.listen(port);
@@ -131,6 +133,10 @@ tcpclient.on('close', function() {
 	console.log('tcp connection closed');
 });
 
+tcpclient.on('error', function(ex) {
+    console.log("handled error");
+    console.log(ex);
+});
 
 var processMessage = function(messageBuffer){
 
@@ -145,3 +151,27 @@ var processMessage = function(messageBuffer){
             break;
     }
 }
+
+
+let _lidarRayCount = 64;
+let _lidarDistances = Array(_lidarRayCount).fill(5);
+
+setInterval(function(){
+    _lidarDistances = _lidarDistances.map((v,i,a) => {return (v*9+Math.floor(5+Math.random() * 30))/10; });
+    let buffData = new Uint8Array(_lidarDistances);
+    io.emit('lidar',buffData);
+},100);
+
+
+
+function disconnectEventListener(socket){
+    socket.on('disconnect', function(){
+        console.log("client "+socket['id']+" disconnected");
+    });
+}
+
+io.on('connection',function(socket){
+    console.log("client "+socket['id']+" connected");
+
+    disconnectEventListener(socket);
+});
