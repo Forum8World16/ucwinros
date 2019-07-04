@@ -172,10 +172,11 @@ tcpclient.on('error', function(ex) {
 var processMessage = function(messageBuffer){
     //process the first two bytes for the message type after the first 4 bytes for message length
     let sample = {};
-    sample['type'] = messageBuffer.readUInt16LE(4); //2 bytes
-    console.log("message type: " + sample['type'].toString(16)); //convert the integer to hexidecimal
+    let messageType = messageBuffer.readUInt16LE(4); //2 bytes
+    sample['type'] = messageType.toString(16);//convert the integer to hexidecimal
+    console.log("message type: " + sample['type']);
 
-    switch(sample['type']){
+    switch(messageType){
         case 0x0101:
             //Vehicle Control Message Schema
             break;

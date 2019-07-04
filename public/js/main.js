@@ -224,9 +224,10 @@ function render() {
 
 
 
-//vertical 0-14 degrees with 8 segments is 2 degrees
+//vertical -14 to 0 degrees with 8 segments is 2 degrees
 //horizontal is -45 to +45 with 128 segments is 0.01236847501413304424591591883181 radians
-let _lidarRayCount = 128;
+//                                              0.70866141732283464566929133858268 degrees
+let _lidarRayCount = 91;
 let _lidarLayerCount = 8;
 let _lidarDistances = [];
 let _lidarDevice = new THREE.Group();
@@ -237,7 +238,7 @@ function createLidarDevice() {
     for(v=0;v<_lidarLayerCount;v++){
         let lidarLayer = new THREE.Group();
         //_lidarDistances.push([]);
-        let vAngle = v*(14/360)*2*Math.PI/_lidarLayerCount;
+        let vAngle = -v*(14/360)*2*Math.PI/_lidarLayerCount;
         let vCosine = Math.cos(vAngle);
         for(i=0;i<_lidarRayCount;i++){
             let geometry = new THREE.Geometry();
@@ -253,19 +254,19 @@ function createLidarDevice() {
 createLidarDevice();
 
 function updateLidarDevice(vId,dists){
-    let _lidarRays = _lidarDevice.children[vId-1];
-    console.dir(_lidarRays);
+    let lidarLayer = _lidarDevice.children[vId-1].children;
+    console.dir(lidarLayer);
     
-    let vAngle = (vId-1)*(14/360)*2*Math.PI/_lidarLayerCount;
+    let vAngle = -(vId-1)*(14/360)*2*Math.PI/_lidarLayerCount;
     let vCosine = Math.cos(vAngle);
     for(i=0;i<_lidarRayCount;i++){
         let geometry = new THREE.Geometry();
         let hAngle = i*0.5*Math.PI/(_lidarRayCount-1)-0.25*Math.PI;
-        _lidarRays[i].geometry.vertices[1].x = dists[i]*Math.cos(hAngle)*vCosine;
-        _lidarRays[i].geometry.vertices[1].y = dists[i]*Math.cos(vAngle)*vCosine;
-        _lidarRays[i].geometry.vertices[1].z = dists[i]*Math.sin(hAngle)*vCosine;
-        _lidarRays[i].geometry.vertices.needsUpdate = true;
-        _lidarRays[i].geometry.verticesNeedUpdate = true;
+        lidarLayer[i].geometry.vertices[1].x = dists[i]*Math.cos(hAngle)*vCosine;
+        lidarLayer[i].geometry.vertices[1].y = dists[i]*Math.sin(vAngle);
+        lidarLayer[i].geometry.vertices[1].z = dists[i]*Math.sin(hAngle)*vCosine;
+        lidarLayer[i].geometry.vertices.needsUpdate = true;
+        lidarLayer[i].geometry.verticesNeedUpdate = true;
     }
 }
 
