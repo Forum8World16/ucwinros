@@ -234,8 +234,11 @@ let _lidarDevice = new THREE.Group();
 
 function createLidarDevice() {
     _lidarDevice.position.y = 2;
-    let material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
     for(v=0;v<_lidarLayerCount;v++){
+        let colorString = "hsl("+((360+80-v*30)%360)+",100%,50%)";
+        let color = new THREE.Color(colorString);
+        //let material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+        let material = new THREE.LineBasicMaterial( { 'color': color } );
         let lidarLayer = new THREE.Group();
         //_lidarDistances.push([]);
         let vAngle = -v*(14/360)*2*Math.PI/_lidarLayerCount;

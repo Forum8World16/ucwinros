@@ -157,11 +157,11 @@ tcpclient.on('data', function(data) {
 tcpclient.on('close', function() {
     console.log('tcp connection closed');
     
-    // setTimeout(function(){
-    //     tcpclient.connect(TCP_PORT, TCP_ADDR, function() {
-    //         console.log('connected to tcp server');
-    //     });
-    // },5000);//try to connect to tcp server again every 5 seconds
+    setTimeout(function(){
+        tcpclient.connect(TCP_PORT, TCP_ADDR, function() {
+            console.log('connected to tcp server');
+        });
+    },5000);//try to connect to tcp server again every 5 seconds
 });
 
 tcpclient.on('error', function(ex) {
